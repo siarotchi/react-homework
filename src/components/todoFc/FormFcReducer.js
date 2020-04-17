@@ -1,19 +1,13 @@
-import React, { useEffect, useContext, useRef, forwardRef, useImperativeHandle } from "react";
-import { Context } from "../../pages/ToDoFc";
+import React, { useEffect, useContext, useRef } from "react";
+import { Context } from "../../pages/ToDoFcUseReducer";
 
-const FormFc = ({ inputChange, handleEnter, addTask }, ref) => {
+const FormFcReducer = ({ inputChange, handleEnter, addTask }) => {
   const { value } = useContext(Context);
-  const inputRef = useRef();
+  const inputRef = useRef(null);
 
   useEffect(() => {
     inputRef.current.focus();
   }, [value]);
-
-  useImperativeHandle(ref, () => ({
-    getHeight: () => {
-      return inputRef.current.offsetParent.offsetHeight;
-    },
-  }));
 
   return (
     <div className="task-input">
@@ -33,5 +27,5 @@ const FormFc = ({ inputChange, handleEnter, addTask }, ref) => {
   );
 };
 
-export default forwardRef(FormFc);
+export default FormFcReducer;
 // export default React.memo(FormFc);
