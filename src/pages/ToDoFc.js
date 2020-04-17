@@ -1,16 +1,16 @@
-import React, { useState, useEffect, createContext } from "react";
+import React, { useState, useEffect, createContext, useRef } from "react";
 import FormFc from "../components/todoFc/FormFc";
 import NotesFc from "../components/todoFc/NotesFc";
 import { v4 as uuidv4 } from "uuid";
-// import { TodoContext } from "../components/todoContext";
 
 export const Context = createContext({});
 
 const TodoFc = () => {
   const [tasks, setTasks] = useState([]);
   const [value, setValue] = useState("");
-
+  const [containerHeight, setContainerHeight] = useState(300);
   const contextValue = { tasks, value };
+  const inputRef = useRef();
 
   useEffect(() => {
     const arr = localStorage.getItem("tasks") || [];
@@ -23,6 +23,7 @@ const TodoFc = () => {
 
   const addTask = (task) => {
     if (!task) return null;
+    setContainerHeight(inputRef.current.getHeight());
     setTasks([...tasks, { id: uuidv4(), title: task, done: false }]);
     setValue("");
   };
@@ -62,9 +63,10 @@ const TodoFc = () => {
 
   return (
     <Context.Provider value={contextValue}>
-      <div className="todo-container">
-        <h1 className="todo-header">ToDo List:</h1>
-        <FormFc addTask={addTask} inputChange={inputChange} handleEnter={handleEnter} />
+      <div className="todo-container" style={{ height: `${containerHeight}px` }}>
+        <h3 className="todo-header">ToDo Height: {containerHeight}</h3>
+        <h1 className="todo-header">ToDo List: </h1>
+        <FormFc ref={inputRef} addTask={addTask} inputChange={inputChange} handleEnter={handleEnter} />
         <hr />
         {tasks.map((task, index) => (
           <NotesFc
