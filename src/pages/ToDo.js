@@ -2,9 +2,8 @@ import React from "react";
 import Form from "../components/todoClass/Form";
 import Notes from "../components/todoClass/Notes";
 import { v4 as uuidv4 } from "uuid";
-// import { Context } from "../components/context";
-
-// const contextValue = { tasks, value };
+import { TodoProvider } from "../components/todoContext";
+// import { useEditedTask } from "../components/customHooks";
 
 class Todo extends React.Component {
   state = {
@@ -12,23 +11,33 @@ class Todo extends React.Component {
     value: "",
   };
 
-  addTask = (task) => {
+  addTask = (task, tasks, changeState) => {
+    const taskEdit = this.editedTask(tasks);
     if (!task) return null;
-    this.setState(({ tasks }) => ({
+
+    if (taskEdit) {
+      return changeState({
+        tasks: tasks.map((task) => (task.id === taskEdit.id ? { ...task, edit: false } : task)),
+        value: "",
+      });
+    }
+
+    changeState(({ tasks }) => ({
       tasks: [
         ...tasks,
         {
           id: uuidv4(),
           title: task,
           done: false,
+          edit: false,
         },
       ],
       value: "",
     }));
   };
 
-  doneTask = (id) => {
-    this.setState(({ tasks }) => ({
+  doneTask = (id, changeState) => {
+    changeState(({ tasks }) => ({
       tasks: tasks.map((task) => {
         if (task.id === id) task.done = true;
         return task;
@@ -36,66 +45,70 @@ class Todo extends React.Component {
     }));
   };
 
-  deleteTask = (id) => {
-    this.setState(({ tasks }) => ({
+  deleteTask = (id, changeState) => {
+    changeState(({ tasks }) => ({
       tasks: tasks.filter((task) => task.id !== id),
     }));
   };
 
-  clearAll = () => {
-    this.setState(() => ({
+  clearAll = (changeState) => {
+    changeState(() => ({
       tasks: [],
     }));
   };
 
-  editTask = (id) => {
-    const { tasks } = this.state;
-    const selectedItem = tasks.find((task) => task.id === id);
+  editTask = (id, tasks, changeState) => {
+    const editTasks = tasks.map((task) => (task.id === id ? { ...task, edit: true } : task));
+    const selectedItem = (tasks = tasks.find((task) => task.id === id));
 
-    this.setState(({ tasks }) => ({
-      tasks: tasks.filter((task) => {
-        return task.id !== id;
-      }),
+    changeState(() => ({
       value: selectedItem.title,
+      tasks: editTasks,
     }));
   };
 
-  inputChange = (event) => {
-    this.setState({ value: event.target.value });
+  editedTask = (tasks = []) => {
+    let taskToEdit = tasks;
+    if (tasks.length > 0) {
+      taskToEdit = tasks.filter((task) => task.edit);
+    }
+    // const taskToEdit = tasks.length > 0 ? tasks.filter((task) => task.edit) : [];
+    return taskToEdit && taskToEdit.length ? taskToEdit[0] : undefined;
   };
 
-  handleEnter = (event) => {
+  inputChange = (value, tasks, changeState) => {
+    const taskEdit = this.editedTask(tasks);
+    if (taskEdit) {
+      changeState({
+        tasks: tasks.map((task) => (task.id === taskEdit.id ? { ...task, title: value } : task)),
+      });
+    }
+    changeState({ value: value });
+  };
+
+  handleEnter = (event, tasks, changeState) => {
     if (event.key === "Enter") {
-      this.addTask(event.target.value);
+      this.addTask(event.target.value, tasks, changeState);
     }
   };
 
   render() {
-    const { tasks, value } = this.state;
+    const { value } = this.state;
 
     return (
-      // <Context.Provider value={contextValue}>
-      <div className="todo-container">
-        <h1 className="todo-header">ToDo List:</h1>
-        <Form addTask={this.addTask} inputChange={this.inputChange} handleEnter={this.handleEnter} value={value} />
-        <hr />
-        {tasks.map((task, index) => (
+      <TodoProvider>
+        <div className="todo-container">
+          <h1 className="todo-header">ToDo List:</h1>
+          <Form addTask={this.addTask} inputChange={this.inputChange} handleEnter={this.handleEnter} value={value} />
+          <hr />
           <Notes
-            doneTask={() => this.doneTask(task.id)}
-            deleteTask={() => this.deleteTask(task.id)}
-            editTask={() => this.editTask(task.id)}
-            task={task}
-            key={task.id}
+            doneTask={this.doneTask}
+            deleteTask={this.deleteTask}
+            editTask={this.editTask}
+            clearAll={this.clearAll}
           />
-        ))}
-        <hr />
-        <div className="d-flex justify-content-end">
-          <button onClick={this.clearAll} type="button" className="btn btn-danger text-capitalize ">
-            clear all
-          </button>
         </div>
-      </div>
-      // </Context.Provider>
+      </TodoProvider>
     );
   }
 }

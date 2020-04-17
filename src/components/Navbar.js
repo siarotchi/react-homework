@@ -16,6 +16,11 @@ export const Navbar = () => (
           ToDo Fc
         </NavLink>
       </li>
+      <li className="nav-item">
+        <NavLink className="nav-link" to="/funcreducer">
+          ToDoFc Reducer
+        </NavLink>
+      </li>
     </ul>
   </nav>
 );

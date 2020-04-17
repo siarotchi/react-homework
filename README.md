@@ -1,3 +1,14 @@
+**my App Guide**
+1.ToDo.js: class components with todoConsumer/withTodo(Notes.js have 2 versions)
+\*Edit method with replace value in the same task.
+
+2.ToDoFc.js: functional components with useState/todoProvider and (useEffect, createContext and createContext)
+\*Edit method with deleting and seting new one at the end of the list.
+
+3.ToDoFcUseReducer.js: functional components with useReducer and (useEffect, createContext, useMemo and customHook(useBg))
+
+---
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
