@@ -1,10 +1,10 @@
-import React from "react";
-import { TodoContext } from ".";
+// import React from "react";
+// import { TodoContext } from ".";
 
-class TodoConsumer extends React.Component {
-  render() {
-    return <TodoContext.Consumer>{(context) => this.props.children(context)}</TodoContext.Consumer>;
-  }
-}
+// const TodoConsumer = (props) => {
+//   {
+//     return <TodoContext.Consumer>{(context) => props.children(context)}</TodoContext.Consumer>;
+//   }
+// };
 
-export default TodoConsumer;
+// export default TodoConsumer;

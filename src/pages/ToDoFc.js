@@ -1,25 +1,17 @@
-import React, { useState, useEffect, createContext, useRef } from "react";
+import React, { useState, createContext, useRef } from "react";
 import FormFc from "../components/todoFc/FormFc";
 import NotesFc from "../components/todoFc/NotesFc";
 import { v4 as uuidv4 } from "uuid";
 
-export const Context = createContext({});
+export const ContextFc = createContext({});
 
 const TodoFc = () => {
   const [tasks, setTasks] = useState([]);
   const [value, setValue] = useState("");
   const [containerHeight, setContainerHeight] = useState(300);
+
   const contextValue = { tasks, value };
   const inputRef = useRef();
-
-  useEffect(() => {
-    const arr = localStorage.getItem("tasks") || [];
-    setTasks(JSON.parse(arr));
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-  }, [tasks]);
 
   const addTask = (task) => {
     if (!task) return null;
@@ -45,6 +37,7 @@ const TodoFc = () => {
 
   const clearAll = () => {
     setTasks([]);
+    setContainerHeight(300);
   };
 
   const inputChange = (event) => {
@@ -62,7 +55,7 @@ const TodoFc = () => {
   };
 
   return (
-    <Context.Provider value={contextValue}>
+    <ContextFc.Provider value={contextValue}>
       <div className="todo-container" style={{ height: `${containerHeight}px` }}>
         <h3 className="todo-header">ToDo Height: {containerHeight}</h3>
         <h1 className="todo-header">ToDo List: </h1>
@@ -82,7 +75,7 @@ const TodoFc = () => {
           clear all
         </button>
       </div>
-    </Context.Provider>
+    </ContextFc.Provider>
   );
 };
 

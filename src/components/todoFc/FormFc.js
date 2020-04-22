@@ -1,8 +1,8 @@
 import React, { useEffect, useContext, useRef, forwardRef, useImperativeHandle } from "react";
-import { Context } from "../../pages/ToDoFc";
+import { ContextFc } from "../../pages/ToDoFc";
 
 const FormFc = ({ inputChange, handleEnter, addTask }, ref) => {
-  const { value } = useContext(Context);
+  const { value } = useContext(ContextFc);
   const inputRef = useRef();
 
   useEffect(() => {
@@ -11,7 +11,7 @@ const FormFc = ({ inputChange, handleEnter, addTask }, ref) => {
 
   useImperativeHandle(ref, () => ({
     getHeight: () => {
-      return inputRef.current.offsetParent.offsetHeight;
+      return inputRef.current.offsetParent.clientHeight;
     },
   }));
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 const colors = ["#90ee901f", "#2dc8e13b", "#e7e4941c", "#ffb6c147"];
+
 // export const useEditedTask = (tasks = []) => {
 //   const [taskToEdit, setTaskToEdit] = useState(null);
 //   setTaskToEdit(tasks.filter((task) => task.edit));
@@ -10,12 +11,23 @@ const colors = ["#90ee901f", "#2dc8e13b", "#e7e4941c", "#ffb6c147"];
 
 export const useBg = (tasks) => {
   const [colorIndex, setColorIndex] = useState(0);
-  const updateColor = () => {
-    colorIndex > 2 ? setColorIndex(0) : setColorIndex(colorIndex + 1);
-  };
+
   useEffect(() => {
-    updateColor();
+    setColorIndex((x) => (x > 2 ? 0 : x + 1));
   }, [tasks.length]);
 
   return [colors[colorIndex]];
+};
+
+export const getFromStorage = (name = "") => {
+  const data = localStorage.getItem(name);
+
+  if (data) return JSON.parse(data);
+  return [];
+};
+
+export const useLocalStorage = (name = "", tasks) => {
+  useEffect(() => {
+    localStorage.setItem(name, JSON.stringify(tasks));
+  }, [tasks]);
 };

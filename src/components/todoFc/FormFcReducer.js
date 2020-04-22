@@ -1,8 +1,8 @@
 import React, { useEffect, useContext, useRef } from "react";
 import { Context } from "../../pages/ToDoFcUseReducer";
 
-const FormFcReducer = ({ inputChange, handleEnter, addTask }) => {
-  const { value } = useContext(Context);
+const FormFcReducer = () => {
+  const { value, inputChange, handleEnter, addTask } = useContext(Context);
   const inputRef = useRef(null);
 
   useEffect(() => {

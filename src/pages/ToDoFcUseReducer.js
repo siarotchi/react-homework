@@ -1,70 +1,73 @@
-import React, { useEffect, createContext, useReducer, useMemo } from "react";
+import React, { useEffect, createContext, useReducer } from "react";
 import FormFcReducer from "../components/todoFc/FormFcReducer";
 import NotesFc from "../components/todoFc/NotesFc";
 import { v4 as uuidv4 } from "uuid";
-import { useBg } from "../components/customHooks";
+import { useBg, getFromStorage, useLocalStorage } from "../components/customHooks";
 
 export const Context = createContext({});
 
 const initialState = {
-  tasks: [],
+  tasks: getFromStorage("tasks"),
   tasksCount: 0,
   value: "",
 };
 
 const reducer = (state, { type, payload }) => {
-  switch (type) {
-    case "ADD_TASKS": {
-      return {
-        ...state,
-        tasks: payload,
-        tasksCount: payload.length,
-      };
-    }
+  const handlers = {
+    ADD_TASKS: () => ({
+      ...state,
+      tasks: [...state.tasks, { id: uuidv4(), title: payload, done: false }],
+      tasksCount: state.tasks.length + 1,
+    }),
+    SET_VALUE: (state, payload) => ({
+      ...state,
+      value: payload,
+    }),
+    DONE_TASK: (state, id) => ({
+      ...state,
+      tasks: state.tasks.map((task) => (task.id === id ? ((task.done = true), task) : task)),
+    }),
+    DELETE_TASK: (state, id) => ({
+      ...state,
+      tasks: state.tasks.filter((task) => task.id !== id),
+      tasksCount: state.tasksCount - 1,
+    }),
+    CLEAR_ALL: (state) => ({
+      ...state,
+      tasks: [],
+      tasksCount: 0,
+    }),
+    EDIT_TASK: (state, id) => ({
+      ...state,
+      tasks: state.tasks.filter((task) => {
+        return task.id !== id;
+      }),
+    }),
+  };
 
-    case "SET_VALUE": {
-      return {
-        ...state,
-        value: payload,
-      };
-    }
-
-    default:
-      return state;
-  }
+  return handlers[type](state, payload) || state;
 };
 
 const ToDoFcUseReducer = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { tasks, value, tasksCount } = state;
-  const contextValue = { tasks, value };
+
   const [color] = useBg(tasks);
 
-  // useEffects
+  useLocalStorage("tasks", tasks);
 
-  useEffect(() => {
-    const arr = localStorage.getItem("tasks") || [];
-    dispatch({ type: "ADD_TASKS", payload: JSON.parse(arr) });
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("tasks", JSON.stringify(state.tasks));
-  }, [state.tasks]);
-
-  ///
-
-  const addTask = (task) => {
-    if (!task) return null;
-    dispatch({ type: "ADD_TASKS", payload: [...tasks, { id: uuidv4(), title: task, done: false }] });
+  const addTask = (taskContent) => {
+    if (!taskContent) return null;
+    dispatch({ type: "ADD_TASKS", payload: taskContent });
     dispatch({ type: "SET_VALUE", payload: "" });
   };
 
   const doneTask = (id) => {
-    dispatch({ type: "ADD_TASKS", payload: tasks.map((task) => (task.id === id ? ((task.done = true), task) : task)) });
+    dispatch({ type: "DONE_TASK", payload: id });
   };
 
   const deleteTask = (id) => {
-    dispatch({ type: "ADD_TASKS", payload: tasks.filter((task) => task.id !== id) });
+    dispatch({ type: "DELETE_TASK", payload: id });
   };
 
   const handleEnter = (event) => {
@@ -75,7 +78,7 @@ const ToDoFcUseReducer = () => {
   };
 
   const clearAll = () => {
-    dispatch({ type: "ADD_TASKS", payload: [] });
+    dispatch({ type: "CLEAR_ALL" });
   };
 
   const inputChange = (event) => {
@@ -85,53 +88,20 @@ const ToDoFcUseReducer = () => {
   const editTask = (id) => {
     const selectedItem = tasks.find((task) => task.id === id);
     dispatch({
-      type: "ADD_TASKS",
-      payload: tasks.filter((task) => {
-        return task.id !== id;
-      }),
+      type: "EDIT_TASK",
+      payload: id,
     });
     dispatch({ type: "SET_VALUE", payload: selectedItem.title });
   };
 
-  /// useMemo Example
-  const [counter1, setCounter1] = React.useState(0);
-  const [counter2, setCounter2] = React.useState(0);
-
-  const updateCounter1 = () => {
-    setCounter1(counter1 + 1);
-  };
-
-  const updateCounter2 = () => {
-    setCounter2(counter2 + 1);
-  };
-
-  const lessThan3 = useMemo(() => {
-    for (let i = 0; i < 1000000000; i++) {
-      i++;
-    }
-    return counter1 <= 3;
-  }, [counter1]);
-
-  ///
+  const contextValue = { tasks, value, addTask, inputChange, handleEnter };
 
   return (
     <Context.Provider value={contextValue}>
       <div className="todo-container" style={{ backgroundColor: color }}>
         <hr />
-        <h3 className="d-flex justify-content-center"> First counter is {lessThan3 ? "less" : "greater"} than 3</h3>
-        <div className="counter d-flex justify-content-around">
-          <button className="btn btn-primary" onClick={updateCounter1}>
-            Increment Counter 1
-          </button>
-          <span className="btn btn-warning">{counter1}</span>
-          <button className="btn btn-primary" onClick={updateCounter2}>
-            Increment Counter 2
-          </button>
-          <span className="btn btn-warning">{counter2}</span>
-        </div>
-        <hr />
         <h1 className="todo-header d-flex justify-content-center">ToDo List: {tasksCount} tasks to do.</h1>
-        <FormFcReducer addTask={addTask} inputChange={inputChange} handleEnter={handleEnter} />
+        <FormFcReducer />
         <hr />
         {tasks.map((task, index) => (
           <NotesFc

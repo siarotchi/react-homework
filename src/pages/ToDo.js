@@ -1,15 +1,18 @@
-import React from "react";
+import React, { createContext } from "react";
 import Form from "../components/todoClass/Form";
 import Notes from "../components/todoClass/Notes";
 import { v4 as uuidv4 } from "uuid";
-import { TodoProvider } from "../components/todoContext";
-// import { useEditedTask } from "../components/customHooks";
+// import { TodoProvider } from "../components/todoContext";
+
+export const ContextClass = createContext({});
 
 class Todo extends React.Component {
   state = {
     tasks: [],
     value: "",
   };
+
+  changeState = (e) => this.setState(e);
 
   addTask = (task, tasks, changeState) => {
     const taskEdit = this.editedTask(tasks);
@@ -70,7 +73,7 @@ class Todo extends React.Component {
   editedTask = (tasks = []) => {
     let taskToEdit = tasks;
     if (tasks.length > 0) {
-      taskToEdit = tasks.filter((task) => task.edit);
+      taskToEdit = tasks.find((task) => task.edit);
     }
     // const taskToEdit = tasks.length > 0 ? tasks.filter((task) => task.edit) : [];
     return taskToEdit && taskToEdit.length ? taskToEdit[0] : undefined;
@@ -93,13 +96,16 @@ class Todo extends React.Component {
   };
 
   render() {
-    const { value } = this.state;
+    const { value, tasks } = this.state;
+    console.log(tasks);
+
+    const contextValue = { tasks, value, changeState: this.changeState };
 
     return (
-      <TodoProvider>
+      <ContextClass.Provider value={contextValue}>
         <div className="todo-container">
           <h1 className="todo-header">ToDo List:</h1>
-          <Form addTask={this.addTask} inputChange={this.inputChange} handleEnter={this.handleEnter} value={value} />
+          <Form addTask={this.addTask} inputChange={this.inputChange} handleEnter={this.handleEnter} />
           <hr />
           <Notes
             doneTask={this.doneTask}
@@ -108,7 +114,7 @@ class Todo extends React.Component {
             clearAll={this.clearAll}
           />
         </div>
-      </TodoProvider>
+      </ContextClass.Provider>
     );
   }
 }
