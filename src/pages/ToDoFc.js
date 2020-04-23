@@ -1,4 +1,4 @@
-import React, { useState, createContext, useRef } from "react";
+import React, { useState, createContext, useRef, useMemo } from "react";
 import FormFc from "../components/todoFc/FormFc";
 import NotesFc from "../components/todoFc/NotesFc";
 import { v4 as uuidv4 } from "uuid";
@@ -54,6 +54,20 @@ const TodoFc = () => {
     setValue(selectedItem.title);
   };
 
+  const renderedTasksFc = useMemo(
+    () =>
+      tasks.map((task, index) => (
+        <NotesFc
+          doneTask={() => doneTask(task.id)}
+          deleteTask={() => deleteTask(task.id)}
+          editTask={() => editTask(task.id)}
+          task={task}
+          key={task.id}
+        />
+      )),
+    [tasks]
+  );
+
   return (
     <ContextFc.Provider value={contextValue}>
       <div className="todo-container" style={{ height: `${containerHeight}px` }}>
@@ -61,15 +75,7 @@ const TodoFc = () => {
         <h1 className="todo-header">ToDo List: </h1>
         <FormFc ref={inputRef} addTask={addTask} inputChange={inputChange} handleEnter={handleEnter} />
         <hr />
-        {tasks.map((task, index) => (
-          <NotesFc
-            doneTask={() => doneTask(task.id)}
-            deleteTask={() => deleteTask(task.id)}
-            editTask={() => editTask(task.id)}
-            task={task}
-            key={task.id}
-          />
-        ))}
+        {renderedTasksFc}
         <hr />
         <button onClick={clearAll} type="button" className="btn btn-primary btn-block text-capitalize ">
           clear all

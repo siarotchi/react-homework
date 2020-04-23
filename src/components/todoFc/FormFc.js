@@ -34,4 +34,3 @@ const FormFc = ({ inputChange, handleEnter, addTask }, ref) => {
 };
 
 export default forwardRef(FormFc);
-// export default React.memo(FormFc);

@@ -1,4 +1,4 @@
-import React, { useEffect, createContext, useReducer } from "react";
+import React, { createContext, useReducer, useMemo, useCallback } from "react";
 import FormFcReducer from "../components/todoFc/FormFcReducer";
 import NotesFc from "../components/todoFc/NotesFc";
 import { v4 as uuidv4 } from "uuid";
@@ -9,7 +9,6 @@ export const Context = createContext({});
 const initialState = {
   tasks: getFromStorage("tasks"),
   tasksCount: 0,
-  value: "",
 };
 
 const reducer = (state, { type, payload }) => {
@@ -18,10 +17,6 @@ const reducer = (state, { type, payload }) => {
       ...state,
       tasks: [...state.tasks, { id: uuidv4(), title: payload, done: false }],
       tasksCount: state.tasks.length + 1,
-    }),
-    SET_VALUE: (state, payload) => ({
-      ...state,
-      value: payload,
     }),
     DONE_TASK: (state, id) => ({
       ...state,
@@ -44,14 +39,15 @@ const reducer = (state, { type, payload }) => {
       }),
     }),
   };
-
-  return handlers[type](state, payload) || state;
+  if (type) {
+    console.log(type);
+    return handlers[type](state, payload) || state;
+  } else return;
 };
 
 const ToDoFcUseReducer = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { tasks, value, tasksCount } = state;
-
   const [color] = useBg(tasks);
 
   useLocalStorage("tasks", tasks);
@@ -59,7 +55,6 @@ const ToDoFcUseReducer = () => {
   const addTask = (taskContent) => {
     if (!taskContent) return null;
     dispatch({ type: "ADD_TASKS", payload: taskContent });
-    dispatch({ type: "SET_VALUE", payload: "" });
   };
 
   const doneTask = (id) => {
@@ -72,29 +67,37 @@ const ToDoFcUseReducer = () => {
 
   const handleEnter = (event) => {
     if (event.key === "Enter") {
+      event.preventDefault();
       addTask(event.target.value);
-      dispatch({ type: "SET_VALUE", payload: "" });
     }
   };
 
-  const clearAll = () => {
+  const clearAll = useCallback(() => {
     dispatch({ type: "CLEAR_ALL" });
-  };
-
-  const inputChange = (event) => {
-    dispatch({ type: "SET_VALUE", payload: event.target.value });
-  };
+  }, []);
 
   const editTask = (id) => {
-    const selectedItem = tasks.find((task) => task.id === id);
     dispatch({
       type: "EDIT_TASK",
       payload: id,
     });
-    dispatch({ type: "SET_VALUE", payload: selectedItem.title });
   };
 
-  const contextValue = { tasks, value, addTask, inputChange, handleEnter };
+  const contextValue = { tasks, value, dispatch, addTask, handleEnter };
+
+  const renderedTasksFcReducer = useMemo(
+    () =>
+      tasks.map((task, index) => (
+        <NotesFc
+          doneTask={() => doneTask(task.id)}
+          deleteTask={() => deleteTask(task.id)}
+          editTask={() => editTask(task.id)}
+          task={task}
+          key={task.id}
+        />
+      )),
+    [tasks]
+  );
 
   return (
     <Context.Provider value={contextValue}>
@@ -103,15 +106,7 @@ const ToDoFcUseReducer = () => {
         <h1 className="todo-header d-flex justify-content-center">ToDo List: {tasksCount} tasks to do.</h1>
         <FormFcReducer />
         <hr />
-        {tasks.map((task, index) => (
-          <NotesFc
-            doneTask={() => doneTask(task.id)}
-            deleteTask={() => deleteTask(task.id)}
-            editTask={() => editTask(task.id)}
-            task={task}
-            key={task.id}
-          />
-        ))}
+        {renderedTasksFcReducer}
         <hr />
         <button onClick={clearAll} type="button" className="btn btn-primary btn-block text-capitalize ">
           clear all

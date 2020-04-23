@@ -32,7 +32,7 @@ const Notes = ({ doneTask, deleteTask, editTask, clearAll }) => {
           </ul>
         </div>
       )),
-    [tasks]
+    [tasks, changeState, deleteTask, doneTask, editTask]
   );
 
   return (

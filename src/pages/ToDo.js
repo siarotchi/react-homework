@@ -2,7 +2,6 @@ import React, { createContext } from "react";
 import Form from "../components/todoClass/Form";
 import Notes from "../components/todoClass/Notes";
 import { v4 as uuidv4 } from "uuid";
-// import { TodoProvider } from "../components/todoContext";
 
 export const ContextClass = createContext({});
 
@@ -12,20 +11,10 @@ class Todo extends React.Component {
     value: "",
   };
 
-  changeState = (e) => this.setState(e);
-
-  addTask = (task, tasks, changeState) => {
-    const taskEdit = this.editedTask(tasks);
+  addTask = (task, tasks) => {
     if (!task) return null;
 
-    if (taskEdit) {
-      return changeState({
-        tasks: tasks.map((task) => (task.id === taskEdit.id ? { ...task, edit: false } : task)),
-        value: "",
-      });
-    }
-
-    changeState(({ tasks }) => ({
+    this.setState(({ tasks }) => ({
       tasks: [
         ...tasks,
         {
@@ -39,8 +28,8 @@ class Todo extends React.Component {
     }));
   };
 
-  doneTask = (id, changeState) => {
-    changeState(({ tasks }) => ({
+  doneTask = (id) => {
+    this.setState(({ tasks }) => ({
       tasks: tasks.map((task) => {
         if (task.id === id) task.done = true;
         return task;
@@ -48,26 +37,24 @@ class Todo extends React.Component {
     }));
   };
 
-  deleteTask = (id, changeState) => {
-    changeState(({ tasks }) => ({
+  deleteTask = (id) => {
+    this.setState(({ tasks }) => ({
       tasks: tasks.filter((task) => task.id !== id),
     }));
   };
 
-  clearAll = (changeState) => {
-    changeState(() => ({
+  clearAll = () => {
+    this.setState(() => ({
       tasks: [],
     }));
   };
 
-  editTask = (id, tasks, changeState) => {
-    const editTasks = tasks.map((task) => (task.id === id ? { ...task, edit: true } : task));
-    const selectedItem = (tasks = tasks.find((task) => task.id === id));
+  editTask = (id) => {
+    const { tasks } = this.state;
+    const editedTask = tasks.find((task) => task.id === id);
+    const newTasks = tasks.filter((task) => task.id !== editedTask.id);
 
-    changeState(() => ({
-      value: selectedItem.title,
-      tasks: editTasks,
-    }));
+    this.setState({ tasks: newTasks, value: editedTask.title });
   };
 
   editedTask = (tasks = []) => {
@@ -75,31 +62,22 @@ class Todo extends React.Component {
     if (tasks.length > 0) {
       taskToEdit = tasks.find((task) => task.edit);
     }
-    // const taskToEdit = tasks.length > 0 ? tasks.filter((task) => task.edit) : [];
     return taskToEdit && taskToEdit.length ? taskToEdit[0] : undefined;
   };
 
-  inputChange = (value, tasks, changeState) => {
-    const taskEdit = this.editedTask(tasks);
-    if (taskEdit) {
-      changeState({
-        tasks: tasks.map((task) => (task.id === taskEdit.id ? { ...task, title: value } : task)),
-      });
-    }
-    changeState({ value: value });
+  inputChange = (value) => {
+    this.setState({ value: value });
   };
 
-  handleEnter = (event, tasks, changeState) => {
+  handleEnter = (event, tasks) => {
     if (event.key === "Enter") {
-      this.addTask(event.target.value, tasks, changeState);
+      this.addTask(event.target.value, tasks, this.setState);
     }
   };
 
   render() {
     const { value, tasks } = this.state;
-    console.log(tasks);
-
-    const contextValue = { tasks, value, changeState: this.changeState };
+    const contextValue = { tasks, value };
 
     return (
       <ContextClass.Provider value={contextValue}>

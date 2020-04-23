@@ -1,31 +1,47 @@
-import React, { useEffect, useContext, useRef } from "react";
+import React, { useEffect, useContext, useRef, useState } from "react";
 import { Context } from "../../pages/ToDoFcUseReducer";
 
 const FormFcReducer = () => {
-  const { value, inputChange, handleEnter, addTask } = useContext(Context);
+  const [value, setValue] = useState("");
+  const { handleEnter, addTask } = useContext(Context);
   const inputRef = useRef(null);
 
   useEffect(() => {
     inputRef.current.focus();
-  }, [value]);
+  }, [addTask]);
+
+  const updateValue = (e) => {
+    e.preventDefault();
+    setValue(e.target.value);
+  };
+
+  const onHandleEnter = (e) => {
+    setValue("");
+    handleEnter(e);
+  };
+
+  const handleAddTask = (e) => {
+    e.preventDefault();
+    addTask(value);
+    setValue("");
+  };
 
   return (
-    <div className="task-input">
+    <form className="task-input">
       <input
         ref={inputRef}
         type="text"
         className="form-control fc"
         placeholder="Enter Task"
-        onChange={inputChange}
-        onKeyPress={handleEnter}
+        onChange={updateValue}
+        onKeyPress={onHandleEnter}
         value={value}
       ></input>
-      <button onClick={() => addTask(value)} type="submit" className="btn btn-danger text-capitalize">
+      <button onClick={handleAddTask} type="submit" className="btn btn-danger text-capitalize">
         Add
       </button>
-    </div>
+    </form>
   );
 };
 
 export default FormFcReducer;
-// export default React.memo(FormFc);
