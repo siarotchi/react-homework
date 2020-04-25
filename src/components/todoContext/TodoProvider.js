@@ -10,7 +10,7 @@ class TodoProvider extends React.Component {
   render() {
     const todoContextValue = {
       ...this.state,
-      changeState: (e) => this.setState(e),
+      changeState: (e) => this.setState(e), // this.setState
     };
     return <TodoContext.Provider value={todoContextValue}>{this.props.children}</TodoContext.Provider>;
   }

@@ -1,4 +1,4 @@
-import React, { createContext, useReducer, useMemo, useCallback } from "react";
+import React, { createContext, useState, useReducer, useMemo, useCallback } from "react";
 import FormFcReducer from "../components/todoFc/FormFcReducer";
 import NotesFc from "../components/todoFc/NotesFc";
 import { v4 as uuidv4 } from "uuid";
@@ -9,6 +9,7 @@ export const Context = createContext({});
 const initialState = {
   tasks: getFromStorage("tasks"),
   tasksCount: 0,
+  setTaskIsBeingEdited: false,
 };
 
 const reducer = (state, { type, payload }) => {
@@ -32,22 +33,26 @@ const reducer = (state, { type, payload }) => {
       tasks: [],
       tasksCount: 0,
     }),
-    EDIT_TASK: (state, id) => ({
+    CLEAN_EDIT: (state) => ({
       ...state,
-      tasks: state.tasks.filter((task) => {
-        return task.id !== id;
-      }),
+      setTaskIsBeingEdited: false,
     }),
+    EDIT_TASK: (state, id) => {
+      const editedTask = state.tasks.find((task) => task.id === id);
+      return {
+        ...state,
+        setTaskIsBeingEdited: editedTask,
+      };
+    },
   };
   if (type) {
-    console.log(type);
     return handlers[type](state, payload) || state;
   } else return;
 };
 
 const ToDoFcUseReducer = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { tasks, value, tasksCount } = state;
+  const { tasks, value, tasksCount, setTaskIsBeingEdited } = state;
   const [color] = useBg(tasks);
 
   useLocalStorage("tasks", tasks);
@@ -76,6 +81,10 @@ const ToDoFcUseReducer = () => {
     dispatch({ type: "CLEAR_ALL" });
   }, []);
 
+  const cleanEdit = useCallback(() => {
+    dispatch({ type: "CLEAN_EDIT" });
+  }, []);
+
   const editTask = (id) => {
     dispatch({
       type: "EDIT_TASK",
@@ -83,7 +92,13 @@ const ToDoFcUseReducer = () => {
     });
   };
 
-  const contextValue = { tasks, value, dispatch, addTask, handleEnter };
+  const contextValue = {
+    tasks,
+    value,
+    dispatch,
+    addTask,
+    handleEnter,
+  };
 
   const renderedTasksFcReducer = useMemo(
     () =>
@@ -104,7 +119,7 @@ const ToDoFcUseReducer = () => {
       <div className="todo-container" style={{ backgroundColor: color }}>
         <hr />
         <h1 className="todo-header d-flex justify-content-center">ToDo List: {tasksCount} tasks to do.</h1>
-        <FormFcReducer />
+        <FormFcReducer setTaskIsBeingEdited={setTaskIsBeingEdited} cleanEdit={cleanEdit} />
         <hr />
         {renderedTasksFcReducer}
         <hr />

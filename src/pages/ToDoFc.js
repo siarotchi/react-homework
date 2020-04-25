@@ -8,6 +8,7 @@ export const ContextFc = createContext({});
 const TodoFc = () => {
   const [tasks, setTasks] = useState([]);
   const [value, setValue] = useState("");
+  const [taskIsBeindEdited, setTaskIsBeingEdited] = useState(false);
   const [containerHeight, setContainerHeight] = useState(300);
 
   const contextValue = { tasks, value };
@@ -28,13 +29,6 @@ const TodoFc = () => {
     setTasks(tasks.filter((task) => task.id !== id));
   };
 
-  const handleEnter = (event) => {
-    if (event.key === "Enter") {
-      addTask(event.target.value);
-      setValue("");
-    }
-  };
-
   const clearAll = () => {
     setTasks([]);
     setContainerHeight(300);
@@ -42,16 +36,17 @@ const TodoFc = () => {
 
   const inputChange = (event) => {
     setValue(event.target.value);
+    event.preventDefault();
   };
 
   const editTask = (id) => {
-    const selectedItem = tasks.find((task) => task.id === id);
     setTasks(
       tasks.filter((task) => {
         return task.id !== id;
       })
     );
-    setValue(selectedItem.title);
+    const editedTask = tasks.find((task) => task.id === id);
+    setTaskIsBeingEdited(editedTask);
   };
 
   const renderedTasksFc = useMemo(
@@ -73,7 +68,15 @@ const TodoFc = () => {
       <div className="todo-container" style={{ height: `${containerHeight}px` }}>
         <h3 className="todo-header">ToDo Height: {containerHeight}</h3>
         <h1 className="todo-header">ToDo List: </h1>
-        <FormFc ref={inputRef} addTask={addTask} inputChange={inputChange} handleEnter={handleEnter} />
+        <FormFc
+          ref={inputRef}
+          addTask={addTask}
+          inputChange={inputChange}
+          taskIsBeindEdited={taskIsBeindEdited}
+          cleanEdit={() => {
+            setTaskIsBeingEdited(false);
+          }}
+        />
         <hr />
         {renderedTasksFc}
         <hr />

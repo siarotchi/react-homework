@@ -71,6 +71,7 @@ class Todo extends React.Component {
 
   handleEnter = (event, tasks) => {
     if (event.key === "Enter") {
+      event.preventDefault();
       this.addTask(event.target.value, tasks, this.setState);
     }
   };

@@ -1,14 +1,24 @@
 import React, { useEffect, useContext, useRef, useState } from "react";
 import { Context } from "../../pages/ToDoFcUseReducer";
 
-const FormFcReducer = () => {
+const FormFcReducer = ({ setTaskIsBeingEdited, cleanEdit }) => {
   const [value, setValue] = useState("");
-  const { handleEnter, addTask } = useContext(Context);
+  const { addTask } = useContext(Context);
+
   const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (setTaskIsBeingEdited) updateNewTitle(setTaskIsBeingEdited.title);
+  }, [setTaskIsBeingEdited]);
 
   useEffect(() => {
     inputRef.current.focus();
   }, [addTask]);
+
+  const updateNewTitle = (title) => {
+    console.log(title);
+    setValue(title);
+  };
 
   const updateValue = (e) => {
     e.preventDefault();
@@ -16,8 +26,11 @@ const FormFcReducer = () => {
   };
 
   const onHandleEnter = (e) => {
-    setValue("");
-    handleEnter(e);
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addTask(e.target.value);
+      setValue("");
+    }
   };
 
   const handleAddTask = (e) => {
@@ -25,6 +38,15 @@ const FormFcReducer = () => {
     addTask(value);
     setValue("");
   };
+
+  const onCancelEdit = (e) => {
+    e.preventDefault();
+    addTask(setTaskIsBeingEdited.title);
+    setValue("");
+    cleanEdit();
+  };
+
+  console.log({ setTaskIsBeingEdited });
 
   return (
     <form className="task-input">
@@ -40,6 +62,11 @@ const FormFcReducer = () => {
       <button onClick={handleAddTask} type="submit" className="btn btn-danger text-capitalize">
         Add
       </button>
+      {setTaskIsBeingEdited && (
+        <button onClick={onCancelEdit} type="submit" className="btn btn-danger text-capitalize">
+          Cancel
+        </button>
+      )}
     </form>
   );
 };

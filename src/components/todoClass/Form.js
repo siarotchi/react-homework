@@ -5,8 +5,12 @@ const Form = ({ handleEnter, addTask, inputChange }) => {
   const context = useContext(ContextClass);
   const { value, changeState, tasks } = context;
 
+  const handleAdd = (e) => {
+    e.preventDefault();
+    addTask(value, tasks, changeState);
+  };
   return (
-    <div className="task-input">
+    <form className="task-input">
       <input
         type="text"
         className="form-control"
@@ -15,14 +19,10 @@ const Form = ({ handleEnter, addTask, inputChange }) => {
         onKeyPress={(event) => handleEnter(event, tasks, changeState)}
         value={value}
       ></input>
-      <button
-        onClick={() => addTask(value, tasks, changeState)}
-        type="submit"
-        className="btn btn-primary text-capitalize"
-      >
+      <button onClick={handleAdd} type="submit" className="btn btn-primary text-capitalize">
         add
       </button>
-    </div>
+    </form>
   );
 };
 

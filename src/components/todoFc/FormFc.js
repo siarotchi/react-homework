@@ -1,13 +1,16 @@
-import React, { useEffect, useContext, useRef, forwardRef, useImperativeHandle } from "react";
-import { ContextFc } from "../../pages/ToDoFc";
+import React, { useEffect, useState, useRef, forwardRef, useImperativeHandle } from "react";
 
-const FormFc = ({ inputChange, handleEnter, addTask }, ref) => {
-  const { value } = useContext(ContextFc);
+const FormFc = ({ addTask, taskIsBeindEdited, cleanEdit }, ref) => {
   const inputRef = useRef();
+  const [value, setValue] = useState("");
+
+  useEffect(() => {
+    if (taskIsBeindEdited) updateNewTitle(taskIsBeindEdited.title);
+  }, [taskIsBeindEdited]);
 
   useEffect(() => {
     inputRef.current.focus();
-  }, [value]);
+  }, [addTask]);
 
   useImperativeHandle(ref, () => ({
     getHeight: () => {
@@ -15,21 +18,56 @@ const FormFc = ({ inputChange, handleEnter, addTask }, ref) => {
     },
   }));
 
+  const updateNewTitle = (title) => {
+    setValue(title);
+  };
+
+  const updateValue = (e) => {
+    e.preventDefault();
+    setValue(e.target.value);
+  };
+
+  const onHandleEnter = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addTask(e.target.value);
+      setValue("");
+    }
+  };
+
+  const handleAddTask = (e) => {
+    e.preventDefault();
+    addTask(value);
+    setValue("");
+  };
+
+  const onCancelEdit = (e) => {
+    e.preventDefault();
+    addTask(taskIsBeindEdited.title);
+    setValue("");
+    cleanEdit();
+  };
+
   return (
-    <div className="task-input">
+    <form className="task-input">
       <input
         ref={inputRef}
         type="text"
         className="form-control fc"
         placeholder="Enter Task"
-        onChange={inputChange}
-        onKeyPress={handleEnter}
+        onChange={updateValue}
+        onKeyPress={onHandleEnter}
         value={value}
       ></input>
-      <button onClick={() => addTask(value)} type="submit" className="btn btn-danger text-capitalize">
+      <button onClick={handleAddTask} type="submit" className="btn btn-danger text-capitalize">
         Add
       </button>
-    </div>
+      {taskIsBeindEdited && (
+        <button onClick={onCancelEdit} type="submit" className="btn btn-danger text-capitalize">
+          Cancel
+        </button>
+      )}
+    </form>
   );
 };
 
