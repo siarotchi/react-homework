@@ -1,39 +1,24 @@
-import React, { useEffect, useState, useRef, forwardRef, useImperativeHandle } from "react";
+import React, { useEffect, useState, useRef, forwardRef, useImperativeHandle, useCallback } from "react";
 
 const FormFc = ({ addTask, taskIsBeindEdited, cleanEdit }, ref) => {
-  const inputRef = useRef();
+  const inputRef = useRef(null);
   const [value, setValue] = useState("");
-
-  useEffect(() => {
-    if (taskIsBeindEdited) updateNewTitle(taskIsBeindEdited.title);
-  }, [taskIsBeindEdited]);
-
-  useEffect(() => {
+  const onChange = useCallback(({ target: { value } }) => setValue(value), []);
+  const onSubmit = (e) => {
+    e.preventDefault();
+    handleAddTask(e);
     inputRef.current.focus();
-  }, [addTask]);
+  };
+
+  useEffect(() => {
+    if (taskIsBeindEdited) setValue(taskIsBeindEdited.title);
+  }, [taskIsBeindEdited]);
 
   useImperativeHandle(ref, () => ({
     getHeight: () => {
       return inputRef.current.offsetParent.clientHeight;
     },
   }));
-
-  const updateNewTitle = (title) => {
-    setValue(title);
-  };
-
-  const updateValue = (e) => {
-    e.preventDefault();
-    setValue(e.target.value);
-  };
-
-  const onHandleEnter = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      addTask(e.target.value);
-      setValue("");
-    }
-  };
 
   const handleAddTask = (e) => {
     e.preventDefault();
@@ -49,21 +34,20 @@ const FormFc = ({ addTask, taskIsBeindEdited, cleanEdit }, ref) => {
   };
 
   return (
-    <form className="task-input">
+    <form onSubmit={onSubmit} className="task-input">
       <input
         ref={inputRef}
         type="text"
         className="form-control fc"
         placeholder="Enter Task"
-        onChange={updateValue}
-        onKeyPress={onHandleEnter}
+        onChange={onChange}
         value={value}
       ></input>
-      <button onClick={handleAddTask} type="submit" className="btn btn-danger text-capitalize">
+      <button type="submit" className="btn btn-danger text-capitalize">
         Add
       </button>
       {taskIsBeindEdited && (
-        <button onClick={onCancelEdit} type="submit" className="btn btn-danger text-capitalize">
+        <button onClick={onCancelEdit} className="btn btn-danger text-capitalize">
           Cancel
         </button>
       )}

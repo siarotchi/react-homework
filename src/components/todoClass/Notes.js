@@ -1,6 +1,5 @@
 import React, { useMemo, useContext } from "react";
 import { ActionBtn } from "./ActionBtn";
-// import { withTodo } from "../todoContext";
 import { ContextClass } from "../../pages/ToDo";
 
 const Notes = ({ doneTask, deleteTask, editTask, clearAll }) => {

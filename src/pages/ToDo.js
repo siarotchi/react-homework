@@ -8,10 +8,10 @@ export const ContextClass = createContext({});
 class Todo extends React.Component {
   state = {
     tasks: [],
-    value: "",
+    taskIsBeingEdited: false,
   };
 
-  addTask = (task, tasks) => {
+  addTask = (task) => {
     if (!task) return null;
 
     this.setState(({ tasks }) => ({
@@ -24,7 +24,6 @@ class Todo extends React.Component {
           edit: false,
         },
       ],
-      value: "",
     }));
   };
 
@@ -54,7 +53,7 @@ class Todo extends React.Component {
     const editedTask = tasks.find((task) => task.id === id);
     const newTasks = tasks.filter((task) => task.id !== editedTask.id);
 
-    this.setState({ tasks: newTasks, value: editedTask.title });
+    this.setState({ tasks: newTasks, taskIsBeingEdited: editedTask.title });
   };
 
   editedTask = (tasks = []) => {
@@ -62,29 +61,19 @@ class Todo extends React.Component {
     if (tasks.length > 0) {
       taskToEdit = tasks.find((task) => task.edit);
     }
+
     return taskToEdit && taskToEdit.length ? taskToEdit[0] : undefined;
   };
 
-  inputChange = (value) => {
-    this.setState({ value: value });
-  };
-
-  handleEnter = (event, tasks) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      this.addTask(event.target.value, tasks, this.setState);
-    }
-  };
-
   render() {
-    const { value, tasks } = this.state;
-    const contextValue = { tasks, value };
+    const { tasks, taskIsBeingEdited } = this.state;
+    const contextValue = { tasks };
 
     return (
       <ContextClass.Provider value={contextValue}>
         <div className="todo-container">
           <h1 className="todo-header">ToDo List:</h1>
-          <Form addTask={this.addTask} inputChange={this.inputChange} handleEnter={this.handleEnter} />
+          <Form addTask={this.addTask} taskIsBeingEdited={taskIsBeingEdited} />
           <hr />
           <Notes
             doneTask={this.doneTask}

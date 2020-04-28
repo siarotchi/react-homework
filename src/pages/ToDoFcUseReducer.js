@@ -41,6 +41,7 @@ const reducer = (state, { type, payload }) => {
       const editedTask = state.tasks.find((task) => task.id === id);
       return {
         ...state,
+        tasks: state.tasks.filter((task) => task.id !== id),
         setTaskIsBeingEdited: editedTask,
       };
     },
@@ -70,12 +71,12 @@ const ToDoFcUseReducer = () => {
     dispatch({ type: "DELETE_TASK", payload: id });
   };
 
-  const handleEnter = (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      addTask(event.target.value);
-    }
-  };
+  // const handleEnter = (event) => {
+  //   if (event.key === "Enter") {
+  //     event.preventDefault();
+  //     addTask(event.target.value);
+  //   }
+  // };
 
   const clearAll = useCallback(() => {
     dispatch({ type: "CLEAR_ALL" });
@@ -97,7 +98,7 @@ const ToDoFcUseReducer = () => {
     value,
     dispatch,
     addTask,
-    handleEnter,
+    // handleEnter,
   };
 
   const renderedTasksFcReducer = useMemo(
