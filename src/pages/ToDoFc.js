@@ -1,28 +1,22 @@
-import React, { useState, useEffect, createContext } from "react";
+import React, { useState, createContext, useRef, useMemo } from "react";
 import FormFc from "../components/todoFc/FormFc";
 import NotesFc from "../components/todoFc/NotesFc";
 import { v4 as uuidv4 } from "uuid";
-// import { TodoContext } from "../components/todoContext";
 
-export const Context = createContext({});
+export const ContextFc = createContext({});
 
 const TodoFc = () => {
   const [tasks, setTasks] = useState([]);
   const [value, setValue] = useState("");
+  const [taskIsBeindEdited, setTaskIsBeingEdited] = useState(false);
+  const [containerHeight, setContainerHeight] = useState(300);
 
   const contextValue = { tasks, value };
-
-  useEffect(() => {
-    const arr = localStorage.getItem("tasks") || [];
-    setTasks(JSON.parse(arr));
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-  }, [tasks]);
+  const inputRef = useRef();
 
   const addTask = (task) => {
     if (!task) return null;
+    setContainerHeight(inputRef.current.getHeight());
     setTasks([...tasks, { id: uuidv4(), title: task, done: false }]);
     setValue("");
   };
@@ -35,52 +29,62 @@ const TodoFc = () => {
     setTasks(tasks.filter((task) => task.id !== id));
   };
 
-  const handleEnter = (event) => {
-    if (event.key === "Enter") {
-      addTask(event.target.value);
-      setValue("");
-    }
-  };
-
   const clearAll = () => {
     setTasks([]);
+    setContainerHeight(300);
   };
 
   const inputChange = (event) => {
     setValue(event.target.value);
+    event.preventDefault();
   };
 
   const editTask = (id) => {
-    const selectedItem = tasks.find((task) => task.id === id);
     setTasks(
       tasks.filter((task) => {
         return task.id !== id;
       })
     );
-    setValue(selectedItem.title);
+    const editedTask = tasks.find((task) => task.id === id);
+    setTaskIsBeingEdited(editedTask);
   };
 
+  const renderedTasksFc = useMemo(
+    () =>
+      tasks.map((task, index) => (
+        <NotesFc
+          doneTask={() => doneTask(task.id)}
+          deleteTask={() => deleteTask(task.id)}
+          editTask={() => editTask(task.id)}
+          task={task}
+          key={task.id}
+        />
+      )),
+    [tasks]
+  );
+
   return (
-    <Context.Provider value={contextValue}>
-      <div className="todo-container">
-        <h1 className="todo-header">ToDo List:</h1>
-        <FormFc addTask={addTask} inputChange={inputChange} handleEnter={handleEnter} />
+    <ContextFc.Provider value={contextValue}>
+      <div className="todo-container" style={{ height: `${containerHeight}px` }}>
+        <h3 className="todo-header">ToDo Height: {containerHeight}</h3>
+        <h1 className="todo-header">ToDo List: </h1>
+        <FormFc
+          ref={inputRef}
+          addTask={addTask}
+          inputChange={inputChange}
+          taskIsBeindEdited={taskIsBeindEdited}
+          cleanEdit={() => {
+            setTaskIsBeingEdited(false);
+          }}
+        />
         <hr />
-        {tasks.map((task, index) => (
-          <NotesFc
-            doneTask={() => doneTask(task.id)}
-            deleteTask={() => deleteTask(task.id)}
-            editTask={() => editTask(task.id)}
-            task={task}
-            key={task.id}
-          />
-        ))}
+        {renderedTasksFc}
         <hr />
         <button onClick={clearAll} type="button" className="btn btn-primary btn-block text-capitalize ">
           clear all
         </button>
       </div>
-    </Context.Provider>
+    </ContextFc.Provider>
   );
 };
 

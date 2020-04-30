@@ -1,7 +1,9 @@
-import React, { useEffect, useState, useRef, forwardRef, useImperativeHandle, useCallback } from "react";
+import React, { useEffect, useContext, useRef, useState, useCallback } from "react";
+import { Context } from "../../pages/ToDoFcUseReducer";
 
-const FormFc = ({ addTask, taskIsBeindEdited, cleanEdit }, ref) => {
+const FormFcReducer = ({ setTaskIsBeingEdited, cleanEdit }) => {
   const inputRef = useRef(null);
+  const { addTask } = useContext(Context);
   const [value, setValue] = useState("");
   const onChange = useCallback(({ target: { value } }) => setValue(value), []);
   const onSubmit = (e) => {
@@ -10,15 +12,13 @@ const FormFc = ({ addTask, taskIsBeindEdited, cleanEdit }, ref) => {
     inputRef.current.focus();
   };
 
-  useEffect(() => {
-    if (taskIsBeindEdited) setValue(taskIsBeindEdited.title);
-  }, [taskIsBeindEdited]);
+  const updateNewTitle = (title) => {
+    setValue(title);
+  };
 
-  useImperativeHandle(ref, () => ({
-    getHeight: () => {
-      return inputRef.current.offsetParent.clientHeight;
-    },
-  }));
+  useEffect(() => {
+    if (setTaskIsBeingEdited) updateNewTitle(setTaskIsBeingEdited.title);
+  }, [setTaskIsBeingEdited]);
 
   const handleAddTask = (e) => {
     e.preventDefault();
@@ -28,7 +28,7 @@ const FormFc = ({ addTask, taskIsBeindEdited, cleanEdit }, ref) => {
 
   const onCancelEdit = (e) => {
     e.preventDefault();
-    addTask(taskIsBeindEdited.title);
+    addTask(setTaskIsBeingEdited.title);
     setValue("");
     cleanEdit();
   };
@@ -46,7 +46,7 @@ const FormFc = ({ addTask, taskIsBeindEdited, cleanEdit }, ref) => {
       <button type="submit" className="btn btn-danger text-capitalize">
         Add
       </button>
-      {taskIsBeindEdited && (
+      {setTaskIsBeingEdited && (
         <button onClick={onCancelEdit} className="btn btn-danger text-capitalize">
           Cancel
         </button>
@@ -55,4 +55,4 @@ const FormFc = ({ addTask, taskIsBeindEdited, cleanEdit }, ref) => {
   );
 };
 
-export default forwardRef(FormFc);
+export default FormFcReducer;
